@@ -7,13 +7,21 @@ def fetch_latest_result():
         response = requests.get(url)
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # ঠিক HTML structure অনুযায়ী সিলেক্ট করো
-        history_box = soup.select_one('.list .row')
-        if not history_box:
-            raise ValueError("Couldn't find result box.")
+        # প্রথম .list div এর সব .row এলিমেন্ট বের করো
+        rows = soup.select('.list .row')
+        if not rows or len(rows) == 0:
+            raise ValueError("No result rows found on the page.")
 
-        number = history_box.select_one('.num').text.strip()
-        color = history_box.select_one('.color').text.strip().lower()
+        latest_row = rows[0]  # প্রথম (সর্বশেষ) row
+
+        number_elem = latest_row.select_one('.num')
+        color_elem = latest_row.select_one('.color')
+
+        if number_elem is None or color_elem is None:
+            raise ValueError("Number or Color element missing.")
+
+        number = number_elem.text.strip()
+        color = color_elem.text.strip().lower()
 
         return int(number), color
     except Exception as e:
